@@ -11,7 +11,7 @@ use std::io;
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization(&mut in_channel : [f64; jack::BufferSize]) {
+fn perform_equalization(&mut in_channel : [f64; jack::Frames]) {
     // TODO: perform equalization based on curve.
     // Steps:
         // Perform FFT on in_channel
@@ -68,4 +68,18 @@ fn create_jack_client() {
 
 fn main() {
     create_jack_client();
+}
+
+// Print JACK notifications
+struct Notifications;
+
+impl jack::NotificationHandler for Notifications {
+    fn thread_init(&self, _: &jack::Client) {
+        println!("[JACK]: Thread has been initialized.");
+        println!("[RREQ]: Note that not all notifications from JACK are printed.");
+    }
+    
+    fn shutdown(&mut self, status: jack::ClientStatus, reason: &str) {
+        println!("[JACK]: Shutdown with status {status:?} due to \"{reason}\"");
+    }
 }
