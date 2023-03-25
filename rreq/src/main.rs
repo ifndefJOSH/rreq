@@ -5,7 +5,7 @@
  * */
 use std::io;
 
-use rustfft::{FftPlanner, num_complex::Complex};
+// use rustfft::{FftPlanner, num_complex::Complex};
 
 /**
  * This function should modify the mutable input channel it is given, based on the
@@ -13,15 +13,15 @@ use rustfft::{FftPlanner, num_complex::Complex};
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization(in_channel : &mut [f32]) -> &[f32] {
+fn perform_equalization<'a>(in_channel : &'a [f32]) -> &'a [f32] {
     
     // TODO: perform equalization based on curve.
     // Steps:
         // Perform FFT on in_channel
         // Apply filter curve in f domain
         // inverse FFT from filtered
-    let mut output : [f32; in_channel.len()];
-    return output;
+    let mut output : Box<f32>::new();
+    return output.into_boxed_slice();
 }
 
 fn create_jack_client() {
@@ -49,10 +49,10 @@ fn create_jack_client() {
     let process_callback = move |_: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
         let out_l_p = out_l.as_mut_slice(ps);
         let out_r_p = out_r.as_mut_slice(ps);
-        let mut in_l_p = in_l.as_slice(ps);
-        let mut in_r_p = in_r.as_slice(ps);
-        let eq_l = perform_equalization(&mut in_l_p);
-        let eq_r = perform_equalization(&mut in_r_p);
+        let in_l_p = in_l.as_slice(ps);
+        let in_r_p = in_r.as_slice(ps);
+        let eq_l = perform_equalization(in_l_p);
+        let eq_r = perform_equalization(in_r_p);
         out_l_p.clone_from_slice(eq_l);
         out_r_p.clone_from_slice(eq_r);
         jack::Control::Continue
