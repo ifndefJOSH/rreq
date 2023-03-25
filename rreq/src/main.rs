@@ -5,18 +5,23 @@
  * */
 use std::io;
 
+use rustfft::{FftPlanner, num_complex::Complex};
+
 /**
  * This function should modify the mutable input channel it is given, based on the
  * values of the equalizer parameters
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization(&mut in_channel : [f64; jack::Frames]) {
+fn perform_equalization(in_channel : &mut [f32]) -> &[f32] {
+    
     // TODO: perform equalization based on curve.
     // Steps:
         // Perform FFT on in_channel
         // Apply filter curve in f domain
         // inverse FFT from filtered
+    let mut output : [f32; in_channel.len()];
+    return output;
 }
 
 fn create_jack_client() {
@@ -44,18 +49,18 @@ fn create_jack_client() {
     let process_callback = move |_: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
         let out_l_p = out_l.as_mut_slice(ps);
         let out_r_p = out_r.as_mut_slice(ps);
-        let in_l_p = in_l.as_slice(ps);
-        let in_r_p = in_r.as_slice(ps);
-        perform_equalization(in_l_p);
-        perform_equalization(in_r_p);
-        out_l_p.clone_from_slize(in_l_p);
-        out_r_p.clone_from_slize(in_r_p);
+        let mut in_l_p = in_l.as_slice(ps);
+        let mut in_r_p = in_r.as_slice(ps);
+        let eq_l = perform_equalization(&mut in_l_p);
+        let eq_r = perform_equalization(&mut in_r_p);
+        out_l_p.clone_from_slice(eq_l);
+        out_r_p.clone_from_slice(eq_r);
         jack::Control::Continue
     };
     let process = jack::ClosureProcessHandler::new(process_callback);
 
     // Activate the jack client on program activation. This starts EQ processing
-    let active_client = client.active_async(Notifications, process).unwrap();
+    let active_client = client.activate_async(Notifications, process).unwrap();
 
     // Wait to quit until user input
     println!("Press [ENTER] to exit RREQ");

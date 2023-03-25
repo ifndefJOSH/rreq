@@ -11,3 +11,5 @@ readme = "README.md"
 
 [dependencies]
 jack = "0.11.4"
+imgui = "0.10.0"
+rustfft = "6.1.0"
