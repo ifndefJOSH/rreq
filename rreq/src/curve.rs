@@ -1,5 +1,7 @@
 /**
- * Filter curve file. Created by Joshua Jeppson on
+ * Filter curve file. Created by Joshua Jeppson on 3/24/2023
+ *
+ * Licensed under the GPLv3
  * */
 
 struct BandReject {
@@ -51,18 +53,19 @@ impl Filter {
         buf_size: i32, 
         low: bool, 
         cutoff: f64, 
-        bandwidth: f64,
         time_constant: f64
     ) -> Self {
-        buf_size,
-        low,
-        cutoff,
-        bandwidth
+        Self {
+            buf_size,
+            low,
+            cutoff
+        }
     }
 
     pub curve_at_index(index : u32) -> f64 {
         // Use first-order polynomial function for this
-        let s = index / Self.buf_size; // TODO: cast to f64
+        let s : f64 = index / Self.buf_size; // TODO: cast to f64
+        let time_constant : f64 = 1.0;
         if (Self.low) {
             // H(s) = 1 / (1 + Rs)
             return 1 / (1 + time_constant * s);
@@ -84,4 +87,26 @@ pub struct FiveBandEQ {
     highpass : Filter,
     // The five bands
     bands : [BandReject: 5]
+}
+
+impl FiveBandEq {
+    pub fn new(buf_size : i32) -> Self {
+        Self {
+            buf_size,
+            Filter::new(
+                buf_size,
+                true,
+            ),
+            Filter::new(
+                buf_size,
+                false,
+            ),
+            [BandReject::new(
+                buf_size,
+                0.0,
+                0.0,
+                1.0
+            ); 5]
+        }
+    }
 }

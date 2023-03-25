@@ -6,8 +6,9 @@
 use std::io;
 
 mod gui;
+mod curve;
 
-// use rustfft::{FftPlanner, num_complex::Complex};
+use rustfft::{FftPlanner, num_complex::Complex};
 
 /**
  * This function should modify the mutable input channel it is given, based on the
