@@ -6,11 +6,11 @@
 
 struct BandReject {
     // Center frequency
-    center: f64,
+    pub center: f64,
     // Bandwidth
-    bandwidth: f64,
+    pub bandwidth: f64,
     // Resonance (how wide this is)
-    gain: f64
+    pub gain: f64
 }
 
 impl BandReject { 
@@ -79,11 +79,11 @@ pub struct FiveBandEQ {
     highpass : Filter,
     // The five bands
     // bands : [BandReject; 5]
-    band0 : BandReject,
-    band1 : BandReject,
-    band2 : BandReject,
-    band3 : BandReject,
-    band4 : BandReject,
+    pub band0 : BandReject,
+    pub band1 : BandReject,
+    pub band2 : BandReject,
+    pub band3 : BandReject,
+    pub band4 : BandReject,
 }
 
 impl FiveBandEQ {
