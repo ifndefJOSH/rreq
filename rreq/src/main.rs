@@ -5,6 +5,8 @@
  * */
 use std::io;
 
+mod gui;
+
 // use rustfft::{FftPlanner, num_complex::Complex};
 
 /**
@@ -13,15 +15,15 @@ use std::io;
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization<'a>(in_channel : &'a [f32]) -> &'a [f32] {
+fn perform_equalization<'a>(in_channel : &'a [f32]) { //  -> &'a [f32] {
     
     // TODO: perform equalization based on curve.
     // Steps:
         // Perform FFT on in_channel
         // Apply filter curve in f domain
         // inverse FFT from filtered
-    let mut output : Box<f32>::new();
-    return output.into_boxed_slice();
+    // let mut output : Box<f32>::new();
+    // return output.into_boxed_slice();
 }
 
 fn create_jack_client() {
@@ -32,35 +34,39 @@ fn create_jack_client() {
     ).unwrap();
     
     // Register Two input ports and two output ports
-    let in_l = client
+    let mut in_l = client
         .register_port("rreq_in_l", jack::AudioIn::default())
         .unwrap();
-    let in_r = client
+    let mut in_r = client
         .register_port("rreq_in_r", jack::AudioIn::default())
         .unwrap();
-    let out_l = client
+    let mut out_l = client
         .register_port("rreq_out_l", jack::AudioOut::default())
         .unwrap();
-    let out_r = client
+    let mut out_r = client
         .register_port("rreq_out_r", jack::AudioOut::default())
         .unwrap();
 
     // Create a callback for jack to handle the audio coming in from
     let process_callback = move |_: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
-        let out_l_p = out_l.as_mut_slice(ps);
-        let out_r_p = out_r.as_mut_slice(ps);
-        let in_l_p = in_l.as_slice(ps);
-        let in_r_p = in_r.as_slice(ps);
-        let eq_l = perform_equalization(in_l_p);
-        let eq_r = perform_equalization(in_r_p);
-        out_l_p.clone_from_slice(eq_l);
-        out_r_p.clone_from_slice(eq_r);
+        let mut out_l_p = out_l.as_mut_slice(ps);
+        let mut out_r_p = out_r.as_mut_slice(ps);
+        let mut in_l_p = in_l.as_slice(ps);
+        let mut in_r_p = in_r.as_slice(ps);
+        perform_equalization(&mut in_l_p);
+        perform_equalization(&mut in_r_p);
+        out_l_p.clone_from_slice(in_l_p);
+        out_r_p.clone_from_slice(in_r_p);
         jack::Control::Continue
     };
     let process = jack::ClosureProcessHandler::new(process_callback);
 
     // Activate the jack client on program activation. This starts EQ processing
     let active_client = client.activate_async(Notifications, process).unwrap();
+
+    // Create window
+    println!("[RREQ]: Creating main window");
+    gui::create_window();
 
     // Wait to quit until user input
     println!("Press [ENTER] to exit RREQ");

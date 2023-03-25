@@ -75,7 +75,7 @@ impl Filter {
 
 }
 
-struct FiveBandEQ {
+pub struct FiveBandEQ {
     // Buffer size
     buf_size: i32,
     // The lowpass filter
