@@ -21,18 +21,18 @@ pub enum Message {
     Band4Changed(f64)
 }
 
-pub struct EQWindow<'a> {
-    eq : &'a mut FiveBandEQ
+pub struct EQWindow {
+    eq : FiveBandEQ
 }
 
 // See https://github.com/iced-rs/iced/blob/master/examples/slider/src/main.rs
 
-impl<'a> Sandbox for EQWindow<'a> {
+impl Sandbox for EQWindow {
     type Message = Message;
 
-    fn new(eq : &'a mut FiveBandEQ) -> EQWindow<'a> {
+    fn new() -> EQWindow {
         EQWindow {
-           eq 
+            eq : FiveBandEQ::new() 
         }
     }
 
@@ -48,19 +48,19 @@ impl<'a> Sandbox for EQWindow<'a> {
             }
             
             Message::Band1Changed(value) => {
-                self.eq.band0.gain = value;
+                self.eq.band1.gain = value;
             }
             
             Message::Band2Changed(value) => {
-                self.eq.band0.gain = value;
+                self.eq.band2.gain = value;
             }
             
             Message::Band3Changed(value) => {
-                self.eq.band0.gain = value;
+                self.eq.band3.gain = value;
             }
             
             Message::Band4Changed(value) => {
-                self.eq.band0.gain = value;
+                self.eq.band4.gain = value;
             } 
         }
     }
@@ -73,19 +73,19 @@ impl<'a> Sandbox for EQWindow<'a> {
         let band4_value = self.eq.band4.gain;
         
         let band0_slider = 
-            container(vertical_slider(0.0..=1.5, band0_value, Message::Band0Changed))
+            container(vertical_slider(0.0..=150.0, band0_value, Message::Band0Changed))
                 .height(200);
         let band1_slider = 
-            container(vertical_slider(0.0..=1.5, band1_value, Message::Band1Changed))
+            container(vertical_slider(0.0..=150.0, band1_value, Message::Band1Changed))
                 .height(200);
         let band2_slider = 
-            container(vertical_slider(0.0..=1.5, band2_value, Message::Band2Changed))
+            container(vertical_slider(0.0..=150.0, band2_value, Message::Band2Changed))
                 .height(200);
         let band3_slider = 
-            container(vertical_slider(0.0..=1.5, band3_value, Message::Band3Changed))
+            container(vertical_slider(0.0..=150.0, band3_value, Message::Band3Changed))
                 .height(200);
         let band4_slider = 
-            container(vertical_slider(0.0..=1.5, band4_value, Message::Band4Changed))
+            container(vertical_slider(0.0..=150.0, band4_value, Message::Band4Changed))
                 .height(200);
 
         container(

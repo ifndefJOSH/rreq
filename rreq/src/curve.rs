@@ -4,7 +4,7 @@
  * Licensed under the GPLv3
  * */
 
-struct BandReject {
+pub struct BandReject {
     // Center frequency
     pub center: f64,
     // Bandwidth
@@ -27,7 +27,12 @@ impl BandReject {
     }
 
     pub fn curve_at_index(&mut self, f : f32) -> f32 {
-        // Use  Function for this
+        let f2 = dbg!(f as f64);
+        if f2 < self.center + (self.bandwidth / 2.0) 
+            && f2 > self.center - (self.bandwidth / 2.0
+        ) {
+            return dbg!((self.gain / 100.0) as f32); // Gain is scaled by 100
+        }
         return 1.0
     }
 }
@@ -100,15 +105,15 @@ impl FiveBandEQ {
                 0.0
             ),
             // band0
-            band0 : BandReject::new(0.0, 0.0, 1.0),
+            band0 : BandReject::new(0.0, 0.0, 100.0),
             // band1
-            band1 : BandReject::new(0.0, 0.0, 1.0),
+            band1 : BandReject::new(0.0, 0.0, 100.0),
             // band2
-            band2 : BandReject::new(0.0, 0.0, 1.0),
+            band2 : BandReject::new(0.0, 0.0, 100.0),
             // band3
-            band3 : BandReject::new(0.0, 0.0, 1.0),
+            band3 : BandReject::new(0.0, 0.0, 100.0),
             // band4
-            band4 : BandReject::new(0.0, 0.0, 1.0),
+            band4 : BandReject::new(0.0, 0.0, 100.0),
         }
     }
 }
