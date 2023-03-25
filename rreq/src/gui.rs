@@ -8,7 +8,7 @@ use iced::{Element, Length, Sandbox, Settings};
 
 use crate::curve::FiveBandEQ;
 
-pub fn create_window(eq : &mut FiveBandEQ) {
+pub fn create_window() {
    EQWindow::run(Settings::default());
 }
 
@@ -40,7 +40,7 @@ impl Sandbox for EQWindow {
         String::from("Reasonable Rust Equalizer")
     }
 
-    // TODO: Update
+    // Update Events
     fn update(&mut self, message : Message) {
         match message {
            Message::Band0Changed(value) => {

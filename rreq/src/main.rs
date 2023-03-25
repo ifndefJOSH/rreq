@@ -18,15 +18,24 @@ use rustfft::{FftPlanner, num_complex::Complex};
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization<'a>(in_channel : &'a [f32]) { //  -> &'a [f32] {
+fn perform_equalization<'a>(in_channel : &[f32], out_channel : &mut[f32]) { //  -> &'a [f32] {
     
     // TODO: perform equalization based on curve.
     // Steps:
-        // Perform FFT on in_channel
+    // Perform FFT on in_channel
+    let mut planner = FftPlanner::<f32>::new();
+    let fft = planner.plan_fft_forward(in_channel.len());
+    let mut buffer = vec![Complex{ re: 0.0, im: 0.0 }; in_channel.len()];
+    fft.process(&mut buffer);
         // Apply filter curve in f domain
         // inverse FFT from filtered
-    // let mut output : Box<f32>::new();
-    // return output.into_boxed_slice();
+    let ifft = planner.plan_fft_forward(in_channel.len());
+    let mut ibuffer = vec![Complex{ re: 0.0, im: 0.0 }; in_channel.len()];
+    ifft.process(&mut ibuffer);
+
+    for i in 0..in_channel.len() {
+        out_channel[i] = ibuffer[i].re;
+    }
 }
 
 fn create_jack_client() {
@@ -56,10 +65,10 @@ fn create_jack_client() {
         let mut out_r_p = out_r.as_mut_slice(ps);
         let mut in_l_p = in_l.as_slice(ps);
         let mut in_r_p = in_r.as_slice(ps);
-        perform_equalization(&mut in_l_p);
-        perform_equalization(&mut in_r_p);
-        out_l_p.clone_from_slice(in_l_p);
-        out_r_p.clone_from_slice(in_r_p);
+        perform_equalization(in_l_p, &mut out_l_p);
+        perform_equalization(in_r_p, &mut out_r_p);
+        // out_l_p.clone_from_slice(in_l_p);
+        // out_r_p.clone_from_slice(in_r_p);
         jack::Control::Continue
     };
     let process = jack::ClosureProcessHandler::new(process_callback);
@@ -70,7 +79,7 @@ fn create_jack_client() {
     // Create window
     println!("[RREQ]: Creating main window");
     let mut eq : FiveBandEQ = FiveBandEQ::new();
-    gui::create_window(&mut eq);
+    gui::create_window();
 
     // Wait to quit until user input
     println!("Press [ENTER] to exit RREQ");
