@@ -4,13 +4,13 @@
  * Licensed under the GPLv3
  * */
 use std::io;
-
 use crate::curve::FiveBandEQ;
 
 mod gui;
 mod curve;
 
 use rustfft::{FftPlanner, num_complex::Complex};
+use rustfft::num_traits::Pow;
 
 /**
  * This function should modify the mutable input channel it is given, based on the
@@ -18,23 +18,47 @@ use rustfft::{FftPlanner, num_complex::Complex};
  *
  * @param in_channel The input channel
  * */
-fn perform_equalization<'a>(in_channel : &[f32], out_channel : &mut[f32]) { //  -> &'a [f32] {
+fn perform_equalization<'a>(in_channel : &[f32], out_channel : &mut[f32], sampling_freq : usize) { //  -> &'a [f32] {
     
-    // TODO: perform equalization based on curve.
     // Steps:
     // Perform FFT on in_channel
     let mut planner = FftPlanner::<f32>::new();
     let fft = planner.plan_fft_forward(in_channel.len());
     let mut buffer = vec![Complex{ re: 0.0, im: 0.0 }; in_channel.len()];
-    fft.process(&mut buffer);
-        // Apply filter curve in f domain
-        // inverse FFT from filtered
-    let ifft = planner.plan_fft_forward(in_channel.len());
-    let mut ibuffer = vec![Complex{ re: 0.0, im: 0.0 }; in_channel.len()];
-    ifft.process(&mut ibuffer);
-
     for i in 0..in_channel.len() {
-        out_channel[i] = ibuffer[i].re;
+        buffer[i].re = in_channel[i];
+    }
+    fft.process(&mut buffer);
+    // Apply filter curve in f domain
+    for i in 0..in_channel.len() {
+        // Frequency from the nyquist-shannon sampling theorem
+        let f : f32 = i as f32 * (sampling_freq as f32 ) / in_channel.len() as f32;
+        // println!("Freq: {}", f);
+        // TODO: Actual logic:
+        if f > 500.0 {
+            buffer[i].re = 0.0;
+            buffer[i].im = 0.0;
+        }
+        // else {
+        //    buffer[i].re = 1.0;
+        //    buffer[i].im = 1.0;
+        //}
+    }
+    // inverse FFT from filtered
+    // let mut planner2 = FftPlanner::<f32>::new();
+    //let ifft = planner2.plan_fft_forward(in_channel.len());
+    //let mut ibuffer = vec![Complex{ re: 0.0, im: 0.0 }; in_channel.len()];
+    //ifft.process(&mut ibuffer);
+    fft.process(&mut buffer);
+    for i in 0..in_channel.len() {
+        buffer[i].re /= in_channel.len() as f32;
+        buffer[i].im /= in_channel.len() as f32;
+        // println!("output {} and {}", buffer[i].re, buffer[i].im);
+        out_channel[i] = buffer[i].re; // ((buffer[i].re).pow(2) as f32 + (buffer[i].im).pow(2) as f32).sqrt() as f32;
+        if out_channel[i] > in_channel[i] * 1.5 {
+            out_channel[i] = in_channel[i] * 1.5;
+        }
+
     }
 }
 
@@ -60,13 +84,14 @@ fn create_jack_client() {
         .unwrap();
 
     // Create a callback for jack to handle the audio coming in from
-    let process_callback = move |_: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
+    let process_callback = move |client: &jack::Client, ps: &jack::ProcessScope| -> jack::Control {
+        let sample_rate = client.sample_rate();
         let mut out_l_p = out_l.as_mut_slice(ps);
         let mut out_r_p = out_r.as_mut_slice(ps);
         let mut in_l_p = in_l.as_slice(ps);
         let mut in_r_p = in_r.as_slice(ps);
-        perform_equalization(in_l_p, &mut out_l_p);
-        perform_equalization(in_r_p, &mut out_r_p);
+        perform_equalization(in_l_p, &mut out_l_p, sample_rate);
+        perform_equalization(in_r_p, &mut out_r_p, sample_rate);
         // out_l_p.clone_from_slice(in_l_p);
         // out_r_p.clone_from_slice(in_r_p);
         jack::Control::Continue
