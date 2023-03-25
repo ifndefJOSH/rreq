@@ -5,8 +5,6 @@
  * */
 
 struct BandReject {
-    // Buffer size
-    buf_size: i32,
     // Center frequency
     center: f64,
     // Bandwidth
@@ -17,7 +15,6 @@ struct BandReject {
 
 impl BandReject { 
     pub fn new(
-        buf_size: i32,
         center: f64,
         bandwidth: f64,
         gain: f64
@@ -29,8 +26,9 @@ impl BandReject {
         }
     }
 
-    pub curve_at_index(index : u32) -> f64 {
+    pub fn curve_at_index(&mut self, f : f32) -> f32 {
         // Use  Function for this
+        return 1.0
     }
 }
 
@@ -38,8 +36,6 @@ impl BandReject {
  * Simple first-order lowpass/highpass filter
  * */
 struct Filter {
-    // Buffer size
-    buf_size: i32,
     // Is this a lowpass or highpass filter?
     low: bool,
     // What is the frequency cutoff?
@@ -50,59 +46,51 @@ struct Filter {
 
 impl Filter {
     pub fn new(
-        buf_size: i32, 
         low: bool, 
         cutoff: f64, 
         time_constant: f64
     ) -> Self {
         Self {
-            buf_size,
             low,
-            cutoff
+            cutoff,
+            time_constant
         }
     }
 
-    pub curve_at_index(index : u32) -> f64 {
+    pub fn curve_at_index(&mut self, f : f64) -> f32 {
         // Use first-order polynomial function for this
-        let s : f64 = index / Self.buf_size; // TODO: cast to f64
         let time_constant : f64 = 1.0;
-        if (Self.low) {
+        if self.low {
             // H(s) = 1 / (1 + Rs)
-            return 1 / (1 + time_constant * s);
+            return 1.0 / (1.0 + time_constant * f);
         }
         else {
             // H(s) = Rs / (1 + R*s)
-            return time_constant / (1 + time_constant * s);
+            return time_constant / (1.0 + time_constant * f);
         }
     }
 
 }
 
 pub struct FiveBandEQ {
-    // Buffer size
-    buf_size: i32,
     // The lowpass filter
     lowpass : Filter,
     // The highpass filter
     highpass : Filter,
     // The five bands
-    bands : [BandReject: 5]
+    bands : [BandReject; 5]
 }
 
-impl FiveBandEq {
-    pub fn new(buf_size : i32) -> Self {
+impl FiveBandEQ {
+    pub fn new() -> Self {
         Self {
-            buf_size,
             Filter::new(
-                buf_size,
                 true,
             ),
             Filter::new(
-                buf_size,
                 false,
             ),
             [BandReject::new(
-                buf_size,
                 0.0,
                 0.0,
                 1.0
