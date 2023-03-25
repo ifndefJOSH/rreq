@@ -5,6 +5,8 @@
  * */
 use std::io;
 
+use crate::curve::FiveBandEQ;
+
 mod gui;
 mod curve;
 
@@ -30,7 +32,7 @@ fn perform_equalization<'a>(in_channel : &'a [f32]) { //  -> &'a [f32] {
 fn create_jack_client() {
     // Create Jack client
     let (client, _status) = jack::Client::new(
-        "reasonable_realtime_rust_equalizer",
+        "RREQ",
         jack::ClientOptions::NO_START_SERVER,
     ).unwrap();
     
@@ -67,7 +69,8 @@ fn create_jack_client() {
 
     // Create window
     println!("[RREQ]: Creating main window");
-    gui::create_window();
+    let mut eq : FiveBandEQ = FiveBandEQ::new();
+    gui::create_window(&mut eq);
 
     // Wait to quit until user input
     println!("Press [ENTER] to exit RREQ");

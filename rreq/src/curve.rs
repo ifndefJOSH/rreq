@@ -41,14 +41,14 @@ struct Filter {
     // What is the frequency cutoff?
     cutoff: f64,
     // What is the bandwidth?
-    bandwidth: f64
+    time_constant: f32
 }
 
 impl Filter {
     pub fn new(
         low: bool, 
         cutoff: f64, 
-        time_constant: f64
+        time_constant: f32
     ) -> Self {
         Self {
             low,
@@ -57,9 +57,9 @@ impl Filter {
         }
     }
 
-    pub fn curve_at_index(&mut self, f : f64) -> f32 {
+    pub fn curve_at_index(&mut self, f : f32) -> f32 {
         // Use first-order polynomial function for this
-        let time_constant : f64 = 1.0;
+        let time_constant : f32 = 1.0;
         if self.low {
             // H(s) = 1 / (1 + Rs)
             return 1.0 / (1.0 + time_constant * f);
@@ -78,23 +78,37 @@ pub struct FiveBandEQ {
     // The highpass filter
     highpass : Filter,
     // The five bands
-    bands : [BandReject; 5]
+    // bands : [BandReject; 5]
+    band0 : BandReject,
+    band1 : BandReject,
+    band2 : BandReject,
+    band3 : BandReject,
+    band4 : BandReject,
 }
 
 impl FiveBandEQ {
     pub fn new() -> Self {
         Self {
-            Filter::new(
+            lowpass : Filter::new(
                 true,
+                0.0,
+                0.0
             ),
-            Filter::new(
+            highpass : Filter::new(
                 false,
+                4000.0,
+                0.0
             ),
-            [BandReject::new(
-                0.0,
-                0.0,
-                1.0
-            ); 5]
+            // band0
+            band0 : BandReject::new(0.0, 0.0, 1.0),
+            // band1
+            band1 : BandReject::new(0.0, 0.0, 1.0),
+            // band2
+            band2 : BandReject::new(0.0, 0.0, 1.0),
+            // band3
+            band3 : BandReject::new(0.0, 0.0, 1.0),
+            // band4
+            band4 : BandReject::new(0.0, 0.0, 1.0),
         }
     }
 }
