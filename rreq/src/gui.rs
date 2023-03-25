@@ -30,9 +30,9 @@ pub struct EQWindow<'a> {
 impl<'a> Sandbox for EQWindow<'a> {
     type Message = Message;
 
-    fn new() -> EQWindow<'a> {
+    fn new(eq : &'a mut FiveBandEQ) -> EQWindow<'a> {
         EQWindow {
-           eq : &mut FiveBandEQ::new() 
+           eq 
         }
     }
 
