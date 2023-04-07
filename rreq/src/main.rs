@@ -35,7 +35,7 @@ fn perform_equalization<'a>(in_channel : &[f32], out_channel : &mut[f32], sampli
         let f : f32 = i as f32 * (sampling_freq as f32 ) / in_channel.len() as f32;
         // println!("Freq: {}", f);
         // TODO: Actual logic:
-        if f > 500.0 {
+        if f > 300.0 {
             buffer[i].re = 0.0;
             buffer[i].im = 0.0;
         }
@@ -54,7 +54,7 @@ fn perform_equalization<'a>(in_channel : &[f32], out_channel : &mut[f32], sampli
         buffer[i].re /= in_channel.len() as f32;
         buffer[i].im /= in_channel.len() as f32;
         // println!("output {} and {}", buffer[i].re, buffer[i].im);
-        out_channel[i] = buffer[i].re; // ((buffer[i].re).pow(2) as f32 + (buffer[i].im).pow(2) as f32).sqrt() as f32;
+        out_channel[i] = ((buffer[i].re).pow(2) as f32 + (buffer[i].im).pow(2) as f32).sqrt() as f32;
         if out_channel[i] > in_channel[i] * 1.5 {
             out_channel[i] = in_channel[i] * 1.5;
         }
